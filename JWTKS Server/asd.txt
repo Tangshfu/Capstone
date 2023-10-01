@@ -1,0 +1,59 @@
+'use strict'
+
+require('dotenv').config()
+const jwt = require('jsonwebtoken')
+const jwks = require('jwks-rsa')
+
+const TOKEN_SECRET = 'someweirdtokenstring'
+
+function (request, response, next) {
+    const client = jwks({
+        jwksUri: process.env.TOKEN_KEY_PUBLIC //this is the API endpoint; responds with a json key
+    })
+    const kid = 'something' //I don't want to hardcode this
+    client.getSigningKey(kid, (error, key) => {
+        if (error) throw error
+        const signingKey = key.publicKey || key.rsaPublicKey
+        const token = TOKEN_SECRET
+        if (!token) return response.status(401).send('Access denied')
+        try {
+            const verified = jwt.verify(token, signingKey, { algorithms: ['RS256'] })
+            request.user = verified
+            next()
+        } catch (error) {
+            response.status(400).send({ message: error.message, stack: error.stack })
+        }
+    })
+}
+
+
+
+'use strict'
+
+require('dotenv').config()
+const jwt = require('jsonwebtoken')
+const jwks = require('jwks-rsa')
+
+const TOKEN_SECRET = 'someweirdtokenstring'
+
+function (request, response, next) {
+    const client = jwks({
+        jwksUri: process.env.TOKEN_KEY_PUBLIC //this is the API endpoint; responds with a json key
+    })
+    var decoded = jwt.decode(token, {complete: true});
+    const kid = decoded.kid
+    client.getSigningKey(kid, (error, key) => {
+        if (error) throw error
+        const signingKey = key.publicKey || key.rsaPublicKey
+        const token = TOKEN_SECRET
+        if (!token) return response.status(401).send('Access denied')
+        try {
+            const verified = jwt.verify(token, signingKey, { algorithms: ['RS256'] })
+            request.user = verified
+            next()
+        } catch (error) {
+            response.status(400).send({ message: error.message, stack: error.stack })
+        }
+    })
+}
+
